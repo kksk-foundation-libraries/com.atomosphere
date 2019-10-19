@@ -1,12 +1,14 @@
-package com.atomosphere.kvs;
+package com.atomosphere.kvs.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HistoricalIndexValue {
-	private HistoricalIndex[] historycalIndexs;
+@EqualsAndHashCode
+public class Binary {
+	public byte[] data;
 }

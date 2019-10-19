@@ -1,4 +1,4 @@
-package com.atomosphere.kvs;
+package com.atomosphere.kvs.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class Binary {
-	public byte[] data;
+public class BusinessKey {
+	private byte[] data;
 }

@@ -1,4 +1,4 @@
-package com.atomosphere.kvs;
+package com.atomosphere.kvs.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

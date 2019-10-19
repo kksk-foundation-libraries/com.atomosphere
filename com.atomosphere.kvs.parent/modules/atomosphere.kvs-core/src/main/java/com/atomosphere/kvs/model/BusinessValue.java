@@ -1,4 +1,4 @@
-package com.atomosphere.kvs;
+package com.atomosphere.kvs.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BusinessValue {
-	private byte[] data;
+	private byte[] key;
+	private byte[] value;
 }
