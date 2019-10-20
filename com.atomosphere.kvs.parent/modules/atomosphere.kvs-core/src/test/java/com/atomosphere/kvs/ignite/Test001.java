@@ -38,93 +38,71 @@ public class Test001 {
 		String cond2 = "2019-10-21T00:00:00.00Z";
 		String cond3 = "2019-10-23T00:00:00.00Z";
 
+		byte[] data1, data2, data3, data22;
+
 		System.out.println("add v1");
 		cache.put(toKey(v1.getBytes()), toIndex(v1.getBytes()), v1.getBytes(), Instant.parse(df1).toEpochMilli(), Instant.parse(dt1).toEpochMilli());
-		byte[] data1 = cache.get(Instant.parse(cond1).toEpochMilli(), toKey(v1.getBytes()));
-		System.out.format("data1:%s\n", data1 == null ? null : new String(data1));
-		byte[] data2 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v2.getBytes()));
-		System.out.format("data2:%s\n", data2 == null ? null : new String(data2));
-		byte[] data22 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v22.getBytes()));
-		System.out.format("data22:%s\n", data22 == null ? null : new String(data22));
-		byte[] data3 = cache.get(Instant.parse(cond3).toEpochMilli(), toKey(v3.getBytes()));
-		System.out.format("data3:%s\n", data3 == null ? null : new String(data3));
+		data1 = cache.get(Instant.parse(cond1).toEpochMilli(), toKey(v1.getBytes()));
+		data2 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v2.getBytes()));
+		data22 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v22.getBytes()));
+		data3 = cache.get(Instant.parse(cond3).toEpochMilli(), toKey(v3.getBytes()));
+		log(data1, data2, data22, data3);
 
 		System.out.println("add v2");
 		cache.put(toKey(v2.getBytes()), toIndex(v2.getBytes()), v2.getBytes(), Instant.parse(df2).toEpochMilli(), Instant.parse(dt2).toEpochMilli());
 		data1 = cache.get(Instant.parse(cond1).toEpochMilli(), toKey(v1.getBytes()));
-		System.out.format("data1:%s\n", data1 == null ? null : new String(data1));
 		data2 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v2.getBytes()));
-		System.out.format("data2:%s\n", data2 == null ? null : new String(data2));
 		data22 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v22.getBytes()));
-		System.out.format("data22:%s\n", data22 == null ? null : new String(data22));
 		data3 = cache.get(Instant.parse(cond3).toEpochMilli(), toKey(v3.getBytes()));
-		System.out.format("data3:%s\n", data3 == null ? null : new String(data3));
+		log(data1, data2, data22, data3);
 
 		System.out.println("add v3");
 		cache.put(toKey(v3.getBytes()), toIndex(v3.getBytes()), v3.getBytes(), Instant.parse(df3).toEpochMilli(), Instant.parse(dt3).toEpochMilli());
 		data1 = cache.get(Instant.parse(cond1).toEpochMilli(), toKey(v1.getBytes()));
-		System.out.format("data1:%s\n", data1 == null ? null : new String(data1));
 		data2 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v2.getBytes()));
-		System.out.format("data2:%s\n", data2 == null ? null : new String(data2));
 		data22 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v22.getBytes()));
-		System.out.format("data22:%s\n", data22 == null ? null : new String(data22));
 		data3 = cache.get(Instant.parse(cond3).toEpochMilli(), toKey(v3.getBytes()));
-		System.out.format("data3:%s\n", data3 == null ? null : new String(data3));
+		log(data1, data2, data22, data3);
 
 		System.out.println("put v22");
 		cache.put(toKey(v22.getBytes()), toIndex(v22.getBytes()), v22.getBytes(), Instant.parse(df2).toEpochMilli(), Instant.parse(dt2).toEpochMilli());
 		data1 = cache.get(Instant.parse(cond1).toEpochMilli(), toKey(v1.getBytes()));
-		System.out.format("data1:%s\n", data1 == null ? null : new String(data1));
 		data2 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v2.getBytes()));
-		System.out.format("data2:%s\n", data2 == null ? null : new String(data2));
 		data22 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v22.getBytes()));
-		System.out.format("data22:%s\n", data22 == null ? null : new String(data22));
 		data3 = cache.get(Instant.parse(cond3).toEpochMilli(), toKey(v3.getBytes()));
-		System.out.format("data3:%s\n", data3 == null ? null : new String(data3));
+		log(data1, data2, data22, data3);
 
 		System.out.println("remove v1");
 		cache.remove(toIndex(v1.getBytes()));
 		data1 = cache.get(Instant.parse(cond1).toEpochMilli(), toKey(v1.getBytes()));
-		System.out.format("data1:%s\n", data1 == null ? null : new String(data1));
 		data2 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v2.getBytes()));
-		System.out.format("data2:%s\n", data2 == null ? null : new String(data2));
 		data22 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v22.getBytes()));
-		System.out.format("data22:%s\n", data22 == null ? null : new String(data22));
 		data3 = cache.get(Instant.parse(cond3).toEpochMilli(), toKey(v3.getBytes()));
-		System.out.format("data3:%s\n", data3 == null ? null : new String(data3));
+		log(data1, data2, data22, data3);
 
 		System.out.println("remove v2");
 		cache.remove(toIndex(v2.getBytes()));
 		data1 = cache.get(Instant.parse(cond1).toEpochMilli(), toKey(v1.getBytes()));
-		System.out.format("data1:%s\n", data1 == null ? null : new String(data1));
 		data2 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v2.getBytes()));
-		System.out.format("data2:%s\n", data2 == null ? null : new String(data2));
 		data22 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v22.getBytes()));
-		System.out.format("data22:%s\n", data22 == null ? null : new String(data22));
 		data3 = cache.get(Instant.parse(cond3).toEpochMilli(), toKey(v3.getBytes()));
-		System.out.format("data3:%s\n", data3 == null ? null : new String(data3));
+		log(data1, data2, data22, data3);
 
 		System.out.println("remove v22");
 		cache.remove(toIndex(v22.getBytes()));
 		data1 = cache.get(Instant.parse(cond1).toEpochMilli(), toKey(v1.getBytes()));
-		System.out.format("data1:%s\n", data1 == null ? null : new String(data1));
 		data2 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v2.getBytes()));
-		System.out.format("data2:%s\n", data2 == null ? null : new String(data2));
 		data22 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v22.getBytes()));
-		System.out.format("data22:%s\n", data22 == null ? null : new String(data22));
 		data3 = cache.get(Instant.parse(cond3).toEpochMilli(), toKey(v3.getBytes()));
-		System.out.format("data3:%s\n", data3 == null ? null : new String(data3));
+		log(data1, data2, data22, data3);
 
 		System.out.println("remove v3");
 		cache.remove(toIndex(v3.getBytes()));
 		data1 = cache.get(Instant.parse(cond1).toEpochMilli(), toKey(v1.getBytes()));
-		System.out.format("data1:%s\n", data1 == null ? null : new String(data1));
 		data2 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v2.getBytes()));
-		System.out.format("data2:%s\n", data2 == null ? null : new String(data2));
 		data22 = cache.get(Instant.parse(cond2).toEpochMilli(), toKey(v22.getBytes()));
-		System.out.format("data22:%s\n", data22 == null ? null : new String(data22));
 		data3 = cache.get(Instant.parse(cond3).toEpochMilli(), toKey(v3.getBytes()));
-		System.out.format("data3:%s\n", data3 == null ? null : new String(data3));
+		log(data1, data2, data22, data3);
 
 		ignite.close();
 		//		fail("Not yet implemented");
@@ -140,5 +118,17 @@ public class Test001 {
 		String s = new String(arr);
 		String i = s.split(",")[1];
 		return i.getBytes();
+	}
+
+	private void log(byte[]... data) {
+		StringBuffer sb = new StringBuffer();
+		boolean first = true;
+		for (byte[] _data : data) {
+			if (!first)
+				sb.append(",");
+			sb.append(_data == null ? null : "[" +  new String(_data) + "]");
+			first = false;
+		}
+		System.out.println(sb.toString());
 	}
 }
