@@ -40,5 +40,6 @@
 	</dependencies>
 	<modules>
 		<module>atomosphere-core</module>
+		<module>atomosphere.colfer</module>
 	</modules>
 </project>

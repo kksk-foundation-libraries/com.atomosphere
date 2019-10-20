@@ -1,4 +1,4 @@
-package com.atomosphere;
+package com.atomosphere.colfer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
