@@ -109,12 +109,16 @@ public class ViewCacheAccessor {
 		public Void process(MutableEntry<BusinessKey, HistoricalIndexValue> entry, Object... arguments) throws EntryProcessorException {
 			HistoricalIndex historicalIndex = (HistoricalIndex) arguments[0];
 			HistoricalIndex[] historicalIndexs = entry.getValue().getHistoricalIndexs();
+			boolean modified = false;
 			for (int i = 0; i < historicalIndexs.length; i++) {
-				if (Arrays.equals(historicalIndexs[i].getIndex(), historicalIndex.getIndex())) {
+				if (Arrays.equals(historicalIndexs[i].getIndex(), historicalIndex.getIndex()) && !historicalIndexs[i].equals(historicalIndex)) {
 					historicalIndexs[i] = historicalIndex;
+					modified = true;
 				}
 			}
-			entry.getValue().setHistoricalIndexs(historicalIndexs);
+			if (modified) {
+				entry.getValue().setHistoricalIndexs(historicalIndexs);
+			}
 			return null;
 		}
 	}
