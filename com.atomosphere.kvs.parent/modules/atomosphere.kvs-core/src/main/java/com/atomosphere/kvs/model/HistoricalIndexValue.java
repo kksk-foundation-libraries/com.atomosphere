@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HistoricalIndexValue {
-	private HistoricalIndex[] historycalIndexs;
+	private HistoricalIndex[] historicalIndexs;
 }

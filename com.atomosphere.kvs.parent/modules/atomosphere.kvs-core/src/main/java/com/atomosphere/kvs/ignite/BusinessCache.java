@@ -47,7 +47,7 @@ public class BusinessCache {
 			if (historicalIndexValue == null) {
 				return null;
 			}
-			Optional<byte[]> opt_data = Arrays.asList(historicalIndexValue.getHistorycalIndexs()) //
+			Optional<byte[]> opt_data = Arrays.asList(historicalIndexValue.getHistoricalIndexs()) //
 					.stream() //
 					.filter(historicalIndex -> historicalIndex.getBegin() <= current && historicalIndex.getEnd() >= current) //
 					.map(historicalIndex -> historicalIndex.getIndex()) //
@@ -77,18 +77,18 @@ public class BusinessCache {
 				historicalIndexValue = new HistoricalIndexValue(new HistoricalIndex[] { historicalIndex });
 				result = 1;
 			} else {
-				List<HistoricalIndex> list = new ArrayList<>(Arrays.asList(historicalIndexValue.getHistorycalIndexs()) //
+				List<HistoricalIndex> list = new ArrayList<>(Arrays.asList(historicalIndexValue.getHistoricalIndexs()) //
 						.stream() //
 						.filter(_historicalIndex -> !Arrays.equals(_historicalIndex.getIndex(), historicalIndex.getIndex())) //
 						.collect(Collectors.toList()) //
 				);
-				if (list.size() == historicalIndexValue.getHistorycalIndexs().length) {
+				if (list.size() == historicalIndexValue.getHistoricalIndexs().length) {
 					result = 2;
 				} else {
 					result = 3;
 				}
 				list.add(historicalIndex);
-				historicalIndexValue.setHistorycalIndexs(list.toArray(new HistoricalIndex[list.size()]));
+				historicalIndexValue.setHistoricalIndexs(list.toArray(new HistoricalIndex[list.size()]));
 			}
 			entry.setValue(historicalIndexValue);
 			return result;
@@ -107,7 +107,7 @@ public class BusinessCache {
 			if (historicalIndexValue == null) {
 				result = 1;
 			} else {
-				List<HistoricalIndex> list = new ArrayList<>(Arrays.asList(historicalIndexValue.getHistorycalIndexs()) //
+				List<HistoricalIndex> list = new ArrayList<>(Arrays.asList(historicalIndexValue.getHistoricalIndexs()) //
 						.stream() //
 						.filter(_historicalIndex -> !Arrays.equals(_historicalIndex.getIndex(), index)) //
 						.collect(Collectors.toList()) //
@@ -115,11 +115,11 @@ public class BusinessCache {
 				if (list.size() == 0) {
 					entry.remove();
 					result = 2;
-				} else if (list.size() == historicalIndexValue.getHistorycalIndexs().length) {
+				} else if (list.size() == historicalIndexValue.getHistoricalIndexs().length) {
 					result = 1;
 				} else {
 					result = 3;
-					historicalIndexValue.setHistorycalIndexs(list.toArray(new HistoricalIndex[list.size()]));
+					historicalIndexValue.setHistoricalIndexs(list.toArray(new HistoricalIndex[list.size()]));
 					entry.setValue(historicalIndexValue);
 				}
 			}
