@@ -16,6 +16,6 @@ public class BusinessCacheAccessor {
 	}
 
 	public List<Record> get(long current, byte[] key) {
-		return masterCacheAccessor.get(viewCacheAccessor.getPrimaryKyes(current, key));
+		return masterCacheAccessor.get(viewCacheAccessor.getPrimaryKeys(current, key));
 	}
 }

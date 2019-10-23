@@ -34,7 +34,7 @@ class ViewCacheAccessor {
 	private final ModifyEntryProcessor modifyEntryProcessor = new ModifyEntryProcessor();
 	private final RemoveEntryProcessor removeEntryProcessor = new RemoveEntryProcessor();
 
-	public List<PrimaryKey> getPrimaryKyes(long current, byte[] key) {
+	public List<PrimaryKey> getPrimaryKeys(long current, byte[] key) {
 		return cache.invoke(new BusinessKey().withData(key), getEntryProcessor, new TimestampData().withData(current));
 	}
 
