@@ -1,31 +1,35 @@
 package com.atomosphere.kvs.ignite;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 
-import com.atomosphere.kvs.model.Binary;
-import com.atomosphere.kvs.model.BusinessValue;
+import com.atomosphere.kvs.model.PrimaryKey;
+import com.atomosphere.kvs.model.Record;
 
-public class MasterCacheAccessor {
-	private final IgniteCache<Binary, BusinessValue> cache;
+class MasterCacheAccessor {
+	private final IgniteCache<PrimaryKey, Record> cache;
 
 	public MasterCacheAccessor(Ignite ignite, String cacheName) {
 		cache = ignite.cache(cacheName);
 	}
 
-	public byte[] get(byte[] index) {
-		return cache.get(new Binary(index)).getValue();
+	public Record get(PrimaryKey primaryKey) {
+		return cache.get(primaryKey);
 	}
 
-	public boolean add(byte[] key, byte[] index, byte[] value, long begein, long end) {
-		return cache.putIfAbsent(new Binary(index), new BusinessValue(key, value));
+	public List<Record> get(List<PrimaryKey> primaryKeys) {
+		return new ArrayList<>(primaryKeys.stream().map(primaryKey -> cache.get(primaryKey)).collect(Collectors.toList()));
 	}
 
-	public void modify(byte[] key, byte[] index, byte[] value, long begein, long end) {
-		cache.put(new Binary(index), new BusinessValue(key, value));
+	public Record put(PrimaryKey primaryKey, Record record) {
+		return cache.getAndPut(primaryKey, record);
 	}
 
-	public void remove(byte[] index) {
-		cache.remove(new Binary(index));
+	public Record remove(PrimaryKey primaryKey) {
+		return cache.getAndRemove(primaryKey);
 	}
 }

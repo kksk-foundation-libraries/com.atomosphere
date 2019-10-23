@@ -1,6 +1,9 @@
 package com.atomosphere.kvs.ignite;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
@@ -12,11 +15,13 @@ import org.apache.ignite.IgniteTransactions;
 import org.apache.ignite.transactions.Transaction;
 
 import com.atomosphere.kvs.model.BusinessKey;
-import com.atomosphere.kvs.model.HistoricalIndex;
-import com.atomosphere.kvs.model.HistoricalIndexValue;
+import com.atomosphere.kvs.model.Historical;
+import com.atomosphere.kvs.model.HistoricalArray;
+import com.atomosphere.kvs.model.PrimaryKey;
+import com.atomosphere.kvs.model.TimestampData;
 
-public class ViewCacheAccessor {
-	private final IgniteCache<BusinessKey, HistoricalIndexValue> cache;
+class ViewCacheAccessor {
+	private final IgniteCache<BusinessKey, HistoricalArray> cache;
 	private final IgniteTransactions transactions;
 
 	public ViewCacheAccessor(Ignite ignite, String cacheName) {
@@ -29,121 +34,112 @@ public class ViewCacheAccessor {
 	private final ModifyEntryProcessor modifyEntryProcessor = new ModifyEntryProcessor();
 	private final RemoveEntryProcessor removeEntryProcessor = new RemoveEntryProcessor();
 
-	public byte[] getIndex(long current, byte[] key) {
-		return cache.invoke(new BusinessKey(key), getEntryProcessor, Long.valueOf(current));
+	public List<PrimaryKey> getPrimaryKyes(long current, byte[] key) {
+		return cache.invoke(new BusinessKey().withData(key), getEntryProcessor, new TimestampData().withData(current));
 	}
 
-	public void add(byte[] key, byte[] index, long begin, long end) {
-		try (Transaction txn = transactions.txStart()) {
-			_add(key, index, begin, end);
-		}
+	public void add(BusinessKey businessKey, PrimaryKey primaryKey, TimestampData start, TimestampData end) {
+		_add(businessKey, primaryKey, start, end);
 	}
 
-	public void modify(byte[] key, byte[] index, long begin, long end) {
-		try (Transaction txn = transactions.txStart()) {
-			_modify(key, index, begin, end);
-		}
+	public void modify(BusinessKey businessKey, PrimaryKey primaryKey, TimestampData start, TimestampData end) {
+		_modify(businessKey, primaryKey, start, end);
 	}
 
-	public void modify(byte[] oldKey, byte[] newKey, byte[] index, long begin, long end) {
-		try (Transaction txn = transactions.txStart()) {
-			if (oldKey == newKey || Arrays.equals(oldKey, newKey)) {
-				_modify(oldKey, index, begin, end);
-			} else {
-				_remove(oldKey, index);
-				_add(newKey, index, begin, end);
+	public void modify(BusinessKey businessKeyOld, BusinessKey businessKeyNew, PrimaryKey primaryKey, TimestampData start, TimestampData end) {
+		if (businessKeyOld.equals(businessKeyNew)) {
+			_modify(businessKeyOld, primaryKey, start, end);
+		} else {
+			try (Transaction txn = transactions.txStart()) {
+				_remove(businessKeyOld, primaryKey);
+				_add(businessKeyNew, primaryKey, start, end);
 			}
 		}
 	}
 
-	public void remove(byte[] key, byte[] index) {
-		try (Transaction txn = transactions.txStart()) {
-			_remove(key, index);
+	public void remove(BusinessKey businessKey, PrimaryKey primaryKey) {
+		_remove(businessKey, primaryKey);
+	}
+
+	private void _add(BusinessKey businessKey, PrimaryKey primaryKey, TimestampData start, TimestampData end) {
+		cache.invoke(businessKey, addEntryProcessor, new Historical().withPrimaryKey(primaryKey).withStart(start).withEnd(end));
+	}
+
+	private void _modify(BusinessKey businessKey, PrimaryKey primaryKey, TimestampData start, TimestampData end) {
+		cache.invoke(businessKey, modifyEntryProcessor, new Historical().withPrimaryKey(primaryKey).withStart(start).withEnd(end));
+	}
+
+	private void _remove(BusinessKey businessKey, PrimaryKey primaryKey) {
+		cache.invoke(businessKey, removeEntryProcessor, primaryKey);
+	}
+
+	private static final List<PrimaryKey> BLANK_LIST = new ArrayList<>();
+
+	private static final class GetEntryProcessor implements EntryProcessor<BusinessKey, HistoricalArray, List<PrimaryKey>> {
+		@Override
+		public List<PrimaryKey> process(MutableEntry<BusinessKey, HistoricalArray> entry, Object... arguments) throws EntryProcessorException {
+			long current = ((TimestampData) arguments[0]).getData();
+			if (!entry.exists()) {
+				return BLANK_LIST;
+			}
+			List<PrimaryKey> list = new ArrayList<>( //
+					Arrays.asList(entry.getValue().getData()) //
+							.stream() //
+							.filter(historical -> historical.getStart().getData() <= current && current < historical.getEnd().getData()) //
+							.map(historical -> historical.getPrimaryKey()) //
+							.collect(Collectors.toList()) //
+			);
+			if (list.size() == 0)
+				return BLANK_LIST;
+			return list;
 		}
 	}
 
-	private void _add(byte[] key, byte[] index, long begin, long end) {
-		cache.invoke(new BusinessKey(key), addEntryProcessor, new HistoricalIndex(begin, end, index));
-	}
-
-	private void _modify(byte[] key, byte[] index, long begin, long end) {
-		cache.invoke(new BusinessKey(key), modifyEntryProcessor, new HistoricalIndex(begin, end, index));
-	}
-
-	private void _remove(byte[] key, byte[] index) {
-		cache.invoke(new BusinessKey(key), removeEntryProcessor, index);
-	}
-
-	private static final class GetEntryProcessor implements EntryProcessor<BusinessKey, HistoricalIndexValue, byte[]> {
+	private static final class AddEntryProcessor implements EntryProcessor<BusinessKey, HistoricalArray, Void> {
 		@Override
-		public byte[] process(MutableEntry<BusinessKey, HistoricalIndexValue> entry, Object... arguments) throws EntryProcessorException {
-			Long current = (Long) arguments[0];
-			for (HistoricalIndex historicalIndex : entry.getValue().getHistoricalIndexs()) {
-				if (historicalIndex.getBegin() <= current.longValue() && current.longValue() < historicalIndex.getEnd()) {
-					return historicalIndex.getIndex();
-				}
+		public Void process(MutableEntry<BusinessKey, HistoricalArray> entry, Object... arguments) throws EntryProcessorException {
+			Historical historical = (Historical) arguments[0];
+			if (!entry.exists()) {
+				entry.setValue(new HistoricalArray().withData(new Historical[] { historical }));
+			} else {
+				List<Historical> list = new ArrayList<>();
+				list.add(historical);
+				list.addAll(Arrays.asList(entry.getValue().getData()));
+				entry.getValue().setData(list.toArray(new Historical[list.size()]));
 			}
 			return null;
 		}
 	}
 
-	private static final class AddEntryProcessor implements EntryProcessor<BusinessKey, HistoricalIndexValue, Void> {
+	private static final class ModifyEntryProcessor implements EntryProcessor<BusinessKey, HistoricalArray, Void> {
 		@Override
-		public Void process(MutableEntry<BusinessKey, HistoricalIndexValue> entry, Object... arguments) throws EntryProcessorException {
-			HistoricalIndex historicalIndex = (HistoricalIndex) arguments[0];
-			HistoricalIndex[] historicalIndexs = null;
-			if (entry.getValue() == null) {
-				entry.setValue(new HistoricalIndexValue(new HistoricalIndex[] { historicalIndex }));
-			} else {
-				historicalIndexs = new HistoricalIndex[entry.getValue().getHistoricalIndexs().length + 1];
-				historicalIndexs[0] = historicalIndex;
-				System.arraycopy(entry.getValue().getHistoricalIndexs(), 0, historicalIndexs, 1, entry.getValue().getHistoricalIndexs().length);
-				entry.getValue().setHistoricalIndexs(historicalIndexs);
-			}
+		public Void process(MutableEntry<BusinessKey, HistoricalArray> entry, Object... arguments) throws EntryProcessorException {
+			Historical historical = (Historical) arguments[0];
+			List<Historical> list = new ArrayList<>( //
+					Arrays.asList(entry.getValue().getData()) //
+							.stream() //
+							.map(_historical -> _historical.getPrimaryKey().equals(historical.getPrimaryKey()) ? historical : _historical) //
+							.collect(Collectors.toList()) //
+			);
+			entry.getValue().setData(list.toArray(new Historical[list.size()]));
 			return null;
 		}
 	}
 
-	private static final class ModifyEntryProcessor implements EntryProcessor<BusinessKey, HistoricalIndexValue, Void> {
+	private static final class RemoveEntryProcessor implements EntryProcessor<BusinessKey, HistoricalArray, Void> {
 		@Override
-		public Void process(MutableEntry<BusinessKey, HistoricalIndexValue> entry, Object... arguments) throws EntryProcessorException {
-			HistoricalIndex historicalIndex = (HistoricalIndex) arguments[0];
-			HistoricalIndex[] historicalIndexs = entry.getValue().getHistoricalIndexs();
-			boolean modified = false;
-			for (int i = 0; i < historicalIndexs.length; i++) {
-				if (Arrays.equals(historicalIndexs[i].getIndex(), historicalIndex.getIndex()) && !historicalIndexs[i].equals(historicalIndex)) {
-					historicalIndexs[i] = historicalIndex;
-					modified = true;
-				}
-			}
-			if (modified) {
-				entry.getValue().setHistoricalIndexs(historicalIndexs);
-			}
-			return null;
-		}
-	}
-
-	private static final class RemoveEntryProcessor implements EntryProcessor<BusinessKey, HistoricalIndexValue, Void> {
-		@Override
-		public Void process(MutableEntry<BusinessKey, HistoricalIndexValue> entry, Object... arguments) throws EntryProcessorException {
-			HistoricalIndex historicalIndex = (HistoricalIndex) arguments[0];
-			HistoricalIndex[] historicalIndexs = entry.getValue().getHistoricalIndexs();
-			if (historicalIndexs.length == 1) {
-				if (Arrays.equals(historicalIndexs[0].getIndex(), historicalIndex.getIndex())) {
-					entry.remove();
-				}
+		public Void process(MutableEntry<BusinessKey, HistoricalArray> entry, Object... arguments) throws EntryProcessorException {
+			PrimaryKey primaryKey = (PrimaryKey) arguments[0];
+			List<Historical> list = new ArrayList<>( //
+					Arrays.asList(entry.getValue().getData()) //
+							.stream() //
+							.filter(_historical -> _historical.getPrimaryKey().equals(primaryKey)) //
+							.collect(Collectors.toList()) //
+			);
+			if (list.size() == 0) {
+				entry.remove();
 			} else {
-				int idx = 0;
-				HistoricalIndex[] newHistoricalIndexs = Arrays.copyOf(historicalIndexs, historicalIndexs.length);
-				for (int i = 0; i < historicalIndexs.length; i++) {
-					if (!Arrays.equals(historicalIndexs[i].getIndex(), historicalIndex.getIndex())) {
-						newHistoricalIndexs[idx] = historicalIndexs[i];
-					}
-				}
-				if (historicalIndexs.length != idx + 1) {
-					historicalIndexs = Arrays.copyOf(newHistoricalIndexs, idx + 1);
-					entry.getValue().setHistoricalIndexs(historicalIndexs);
-				}
+				entry.getValue().setData(list.toArray(new Historical[list.size()]));
 			}
 			return null;
 		}

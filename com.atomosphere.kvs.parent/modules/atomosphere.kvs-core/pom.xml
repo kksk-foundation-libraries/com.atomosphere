@@ -10,12 +10,32 @@
 	<artifactId>atomosphere.kvs-core</artifactId>
 	<dependencies>
 		<dependency>
-			<groupId>javax.cache</groupId>
-			<artifactId>cache-api</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.ignite</groupId>
 			<artifactId>ignite-core</artifactId>
 		</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>net.quies.colfer</groupId>
+				<artifactId>colfer-maven-plugin</artifactId>
+				<version>1.11.2</version>
+				<executions>
+					<execution>
+						<id>colfer-java</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<phase>generate-sources</phase>
+						<configuration>
+							<lang>java</lang>
+							<sourceTarget>src/main/java</sourceTarget>
+							<packagePrefix>com/atomosphere/kvs</packagePrefix>
+							<superClass>com/atomosphere/kvs/ColferObject</superClass>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

@@ -24,7 +24,7 @@ import java.nio.BufferUnderflowException;
  * @see <a href="https://github.com/pascaldekloe/colfer">Colfer's home</a>
  */
 @javax.annotation.Generated(value="colf(1)", comments="Colfer from schema file model.colf")
-public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Serializable {
+public class PutEvent extends com.atomosphere.kvs.ColferObject implements Serializable {
 
 	/** The upper limit for serial byte sizes. */
 	public static int colferSizeMax = 16 * 1024 * 1024;
@@ -32,11 +32,21 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 
 
 
-	public byte[] data;
+	public PrimaryKey primaryKey;
+
+	public TimestampData start;
+
+	public TimestampData end;
+
+	public BusinessKey businessKeyOld;
+
+	public BusinessKey businessKeyNew;
+
+	public byte[] others;
 
 
 	/** Default constructor */
-	public BusinessKey() {
+	public PutEvent() {
 		init();
 	}
 
@@ -44,7 +54,7 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 
 	/** Colfer zero values. */
 	private void init() {
-		data = _zeroBytes;
+		others = _zeroBytes;
 	}
 
 	/**
@@ -72,7 +82,7 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 		public Unmarshaller(InputStream in, byte[] buf) {
 			// TODO: better size estimation
 			if (buf == null || buf.length == 0)
-				buf = new byte[Math.min(BusinessKey.colferSizeMax, 2048)];
+				buf = new byte[Math.min(PutEvent.colferSizeMax, 2048)];
 			this.buf = buf;
 			reset(in);
 		}
@@ -96,13 +106,13 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 		 * @throws SecurityException on an upper limit breach defined by {@link #colferSizeMax}.
 		 * @throws InputMismatchException when the data does not match this object's schema.
 		 */
-		public BusinessKey next() throws IOException {
+		public PutEvent next() throws IOException {
 			if (in == null) return null;
 
 			while (true) {
 				if (this.i > this.offset) {
 					try {
-						BusinessKey o = new BusinessKey();
+						PutEvent o = new PutEvent();
 						this.offset = o.unmarshal(this.buf, this.offset, this.i);
 						return o;
 					} catch (BufferUnderflowException e) {
@@ -116,7 +126,7 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 				} else if (i == buf.length) {
 					byte[] src = this.buf;
 					// TODO: better size estimation
-					if (offset == 0) this.buf = new byte[Math.min(BusinessKey.colferSizeMax, this.buf.length * 4)];
+					if (offset == 0) this.buf = new byte[Math.min(PutEvent.colferSizeMax, this.buf.length * 4)];
 					System.arraycopy(src, this.offset, this.buf, 0, this.i - this.offset);
 					this.i -= this.offset;
 					this.offset = 0;
@@ -149,14 +159,14 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 	public byte[] marshal(OutputStream out, byte[] buf) throws IOException {
 		// TODO: better size estimation
 		if (buf == null || buf.length == 0)
-			buf = new byte[Math.min(BusinessKey.colferSizeMax, 2048)];
+			buf = new byte[Math.min(PutEvent.colferSizeMax, 2048)];
 
 		while (true) {
 			int i;
 			try {
 				i = marshal(buf, 0);
 			} catch (BufferOverflowException e) {
-				buf = new byte[Math.min(BusinessKey.colferSizeMax, buf.length * 4)];
+				buf = new byte[Math.min(PutEvent.colferSizeMax, buf.length * 4)];
 				continue;
 			}
 
@@ -177,12 +187,37 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 		int i = offset;
 
 		try {
-			if (this.data.length != 0) {
+			if (this.primaryKey != null) {
 				buf[i++] = (byte) 0;
+				i = this.primaryKey.marshal(buf, i);
+			}
 
-				int size = this.data.length;
-				if (size > BusinessKey.colferSizeMax)
-					throw new IllegalStateException(format("colfer: com/atomosphere/kvs/model.BusinessKey.data size %d exceeds %d bytes", size, BusinessKey.colferSizeMax));
+			if (this.start != null) {
+				buf[i++] = (byte) 1;
+				i = this.start.marshal(buf, i);
+			}
+
+			if (this.end != null) {
+				buf[i++] = (byte) 2;
+				i = this.end.marshal(buf, i);
+			}
+
+			if (this.businessKeyOld != null) {
+				buf[i++] = (byte) 3;
+				i = this.businessKeyOld.marshal(buf, i);
+			}
+
+			if (this.businessKeyNew != null) {
+				buf[i++] = (byte) 4;
+				i = this.businessKeyNew.marshal(buf, i);
+			}
+
+			if (this.others.length != 0) {
+				buf[i++] = (byte) 5;
+
+				int size = this.others.length;
+				if (size > PutEvent.colferSizeMax)
+					throw new IllegalStateException(format("colfer: com/atomosphere/kvs/model.PutEvent.others size %d exceeds %d bytes", size, PutEvent.colferSizeMax));
 
 				int x = size;
 				while (x > 0x7f) {
@@ -193,14 +228,14 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 
 				int start = i;
 				i += size;
-				System.arraycopy(this.data, 0, buf, start, size);
+				System.arraycopy(this.others, 0, buf, start, size);
 			}
 
 			buf[i++] = (byte) 0x7f;
 			return i;
 		} catch (ArrayIndexOutOfBoundsException e) {
-			if (i - offset > BusinessKey.colferSizeMax)
-				throw new IllegalStateException(format("colfer: com/atomosphere/kvs/model.BusinessKey exceeds %d bytes", BusinessKey.colferSizeMax));
+			if (i - offset > PutEvent.colferSizeMax)
+				throw new IllegalStateException(format("colfer: com/atomosphere/kvs/model.PutEvent exceeds %d bytes", PutEvent.colferSizeMax));
 			if (i > buf.length) throw new BufferOverflowException();
 			throw e;
 		}
@@ -237,19 +272,49 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 			byte header = buf[i++];
 
 			if (header == (byte) 0) {
+				this.primaryKey = new PrimaryKey();
+				i = this.primaryKey.unmarshal(buf, i, end);
+				header = buf[i++];
+			}
+
+			if (header == (byte) 1) {
+				this.start = new TimestampData();
+				i = this.start.unmarshal(buf, i, end);
+				header = buf[i++];
+			}
+
+			if (header == (byte) 2) {
+				this.end = new TimestampData();
+				i = this.end.unmarshal(buf, i, end);
+				header = buf[i++];
+			}
+
+			if (header == (byte) 3) {
+				this.businessKeyOld = new BusinessKey();
+				i = this.businessKeyOld.unmarshal(buf, i, end);
+				header = buf[i++];
+			}
+
+			if (header == (byte) 4) {
+				this.businessKeyNew = new BusinessKey();
+				i = this.businessKeyNew.unmarshal(buf, i, end);
+				header = buf[i++];
+			}
+
+			if (header == (byte) 5) {
 				int size = 0;
 				for (int shift = 0; true; shift += 7) {
 					byte b = buf[i++];
 					size |= (b & 0x7f) << shift;
 					if (shift == 28 || b >= 0) break;
 				}
-				if (size < 0 || size > BusinessKey.colferSizeMax)
-					throw new SecurityException(format("colfer: com/atomosphere/kvs/model.BusinessKey.data size %d exceeds %d bytes", size, BusinessKey.colferSizeMax));
+				if (size < 0 || size > PutEvent.colferSizeMax)
+					throw new SecurityException(format("colfer: com/atomosphere/kvs/model.PutEvent.others size %d exceeds %d bytes", size, PutEvent.colferSizeMax));
 
-				this.data = new byte[size];
+				this.others = new byte[size];
 				int start = i;
 				i += size;
-				System.arraycopy(buf, start, this.data, 0, size);
+				System.arraycopy(buf, start, this.others, 0, size);
 
 				header = buf[i++];
 			}
@@ -257,9 +322,9 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 			if (header != (byte) 0x7f)
 				throw new InputMismatchException(format("colfer: unknown header at byte %d", i - 1));
 		} finally {
-			if (i > end && end - offset < BusinessKey.colferSizeMax) throw new BufferUnderflowException();
-			if (i < 0 || i - offset > BusinessKey.colferSizeMax)
-				throw new SecurityException(format("colfer: com/atomosphere/kvs/model.BusinessKey exceeds %d bytes", BusinessKey.colferSizeMax));
+			if (i > end && end - offset < PutEvent.colferSizeMax) throw new BufferUnderflowException();
+			if (i < 0 || i - offset > PutEvent.colferSizeMax)
+				throw new SecurityException(format("colfer: com/atomosphere/kvs/model.PutEvent exceeds %d bytes", PutEvent.colferSizeMax));
 			if (i > end) throw new BufferUnderflowException();
 		}
 
@@ -267,7 +332,7 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 	}
 
 	// {@link Serializable} version number.
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 6L;
 
 	// {@link Serializable} Colfer extension.
 	private void writeObject(ObjectOutputStream out) throws IOException {
@@ -301,48 +366,188 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 	}
 
 	/**
-	 * Gets com/atomosphere/kvs/model.BusinessKey.data.
+	 * Gets com/atomosphere/kvs/model.PutEvent.primaryKey.
 	 * @return the value.
 	 */
-	public byte[] getData() {
-		return this.data;
+	public PrimaryKey getPrimaryKey() {
+		return this.primaryKey;
 	}
 
 	/**
-	 * Sets com/atomosphere/kvs/model.BusinessKey.data.
+	 * Sets com/atomosphere/kvs/model.PutEvent.primaryKey.
 	 * @param value the replacement.
 	 */
-	public void setData(byte[] value) {
-		this.data = value;
+	public void setPrimaryKey(PrimaryKey value) {
+		this.primaryKey = value;
 	}
 
 	/**
-	 * Sets com/atomosphere/kvs/model.BusinessKey.data.
+	 * Sets com/atomosphere/kvs/model.PutEvent.primaryKey.
 	 * @param value the replacement.
 	 * @return {link this}.
 	 */
-	public BusinessKey withData(byte[] value) {
-		this.data = value;
+	public PutEvent withPrimaryKey(PrimaryKey value) {
+		this.primaryKey = value;
+		return this;
+	}
+
+	/**
+	 * Gets com/atomosphere/kvs/model.PutEvent.start.
+	 * @return the value.
+	 */
+	public TimestampData getStart() {
+		return this.start;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.start.
+	 * @param value the replacement.
+	 */
+	public void setStart(TimestampData value) {
+		this.start = value;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.start.
+	 * @param value the replacement.
+	 * @return {link this}.
+	 */
+	public PutEvent withStart(TimestampData value) {
+		this.start = value;
+		return this;
+	}
+
+	/**
+	 * Gets com/atomosphere/kvs/model.PutEvent.end.
+	 * @return the value.
+	 */
+	public TimestampData getEnd() {
+		return this.end;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.end.
+	 * @param value the replacement.
+	 */
+	public void setEnd(TimestampData value) {
+		this.end = value;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.end.
+	 * @param value the replacement.
+	 * @return {link this}.
+	 */
+	public PutEvent withEnd(TimestampData value) {
+		this.end = value;
+		return this;
+	}
+
+	/**
+	 * Gets com/atomosphere/kvs/model.PutEvent.businessKeyOld.
+	 * @return the value.
+	 */
+	public BusinessKey getBusinessKeyOld() {
+		return this.businessKeyOld;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.businessKeyOld.
+	 * @param value the replacement.
+	 */
+	public void setBusinessKeyOld(BusinessKey value) {
+		this.businessKeyOld = value;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.businessKeyOld.
+	 * @param value the replacement.
+	 * @return {link this}.
+	 */
+	public PutEvent withBusinessKeyOld(BusinessKey value) {
+		this.businessKeyOld = value;
+		return this;
+	}
+
+	/**
+	 * Gets com/atomosphere/kvs/model.PutEvent.businessKeyNew.
+	 * @return the value.
+	 */
+	public BusinessKey getBusinessKeyNew() {
+		return this.businessKeyNew;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.businessKeyNew.
+	 * @param value the replacement.
+	 */
+	public void setBusinessKeyNew(BusinessKey value) {
+		this.businessKeyNew = value;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.businessKeyNew.
+	 * @param value the replacement.
+	 * @return {link this}.
+	 */
+	public PutEvent withBusinessKeyNew(BusinessKey value) {
+		this.businessKeyNew = value;
+		return this;
+	}
+
+	/**
+	 * Gets com/atomosphere/kvs/model.PutEvent.others.
+	 * @return the value.
+	 */
+	public byte[] getOthers() {
+		return this.others;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.others.
+	 * @param value the replacement.
+	 */
+	public void setOthers(byte[] value) {
+		this.others = value;
+	}
+
+	/**
+	 * Sets com/atomosphere/kvs/model.PutEvent.others.
+	 * @param value the replacement.
+	 * @return {link this}.
+	 */
+	public PutEvent withOthers(byte[] value) {
+		this.others = value;
 		return this;
 	}
 
 	@Override
 	public final int hashCode() {
 		int h = 1;
-		for (byte b : this.data) h = 31 * h + b;
+		if (this.primaryKey != null) h = 31 * h + this.primaryKey.hashCode();
+		if (this.start != null) h = 31 * h + this.start.hashCode();
+		if (this.end != null) h = 31 * h + this.end.hashCode();
+		if (this.businessKeyOld != null) h = 31 * h + this.businessKeyOld.hashCode();
+		if (this.businessKeyNew != null) h = 31 * h + this.businessKeyNew.hashCode();
+		for (byte b : this.others) h = 31 * h + b;
 		return h;
 	}
 
 	@Override
 	public final boolean equals(Object o) {
-		return o instanceof BusinessKey && equals((BusinessKey) o);
+		return o instanceof PutEvent && equals((PutEvent) o);
 	}
 
-	public final boolean equals(BusinessKey o) {
+	public final boolean equals(PutEvent o) {
 		if (o == null) return false;
 		if (o == this) return true;
-		return o.getClass() == BusinessKey.class
-			&& java.util.Arrays.equals(this.data, o.data);
+		return o.getClass() == PutEvent.class
+			&& (this.primaryKey == null ? o.primaryKey == null : this.primaryKey.equals(o.primaryKey))
+			&& (this.start == null ? o.start == null : this.start.equals(o.start))
+			&& (this.end == null ? o.end == null : this.end.equals(o.end))
+			&& (this.businessKeyOld == null ? o.businessKeyOld == null : this.businessKeyOld.equals(o.businessKeyOld))
+			&& (this.businessKeyNew == null ? o.businessKeyNew == null : this.businessKeyNew.equals(o.businessKeyNew))
+			&& java.util.Arrays.equals(this.others, o.others);
 	}
 
 }

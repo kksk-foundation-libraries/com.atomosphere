@@ -24,27 +24,30 @@ import java.nio.BufferUnderflowException;
  * @see <a href="https://github.com/pascaldekloe/colfer">Colfer's home</a>
  */
 @javax.annotation.Generated(value="colf(1)", comments="Colfer from schema file model.colf")
-public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Serializable {
+public class HistoricalArray extends com.atomosphere.kvs.ColferObject implements Serializable {
 
 	/** The upper limit for serial byte sizes. */
 	public static int colferSizeMax = 16 * 1024 * 1024;
 
+	/** The upper limit for the number of elements in a list. */
+	public static int colferListMax = 64 * 1024;
 
 
 
-	public byte[] data;
+
+	public Historical[] data;
 
 
 	/** Default constructor */
-	public BusinessKey() {
+	public HistoricalArray() {
 		init();
 	}
 
-	private static final byte[] _zeroBytes = new byte[0];
+	private static final Historical[] _zeroData = new Historical[0];
 
 	/** Colfer zero values. */
 	private void init() {
-		data = _zeroBytes;
+		data = _zeroData;
 	}
 
 	/**
@@ -72,7 +75,7 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 		public Unmarshaller(InputStream in, byte[] buf) {
 			// TODO: better size estimation
 			if (buf == null || buf.length == 0)
-				buf = new byte[Math.min(BusinessKey.colferSizeMax, 2048)];
+				buf = new byte[Math.min(HistoricalArray.colferSizeMax, 2048)];
 			this.buf = buf;
 			reset(in);
 		}
@@ -93,16 +96,16 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 		 * Deserializes the following object.
 		 * @return the result or {@code null} when EOF.
 		 * @throws IOException from the input stream.
-		 * @throws SecurityException on an upper limit breach defined by {@link #colferSizeMax}.
+		 * @throws SecurityException on an upper limit breach defined by either {@link #colferSizeMax} or {@link #colferListMax}.
 		 * @throws InputMismatchException when the data does not match this object's schema.
 		 */
-		public BusinessKey next() throws IOException {
+		public HistoricalArray next() throws IOException {
 			if (in == null) return null;
 
 			while (true) {
 				if (this.i > this.offset) {
 					try {
-						BusinessKey o = new BusinessKey();
+						HistoricalArray o = new HistoricalArray();
 						this.offset = o.unmarshal(this.buf, this.offset, this.i);
 						return o;
 					} catch (BufferUnderflowException e) {
@@ -116,7 +119,7 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 				} else if (i == buf.length) {
 					byte[] src = this.buf;
 					// TODO: better size estimation
-					if (offset == 0) this.buf = new byte[Math.min(BusinessKey.colferSizeMax, this.buf.length * 4)];
+					if (offset == 0) this.buf = new byte[Math.min(HistoricalArray.colferSizeMax, this.buf.length * 4)];
 					System.arraycopy(src, this.offset, this.buf, 0, this.i - this.offset);
 					this.i -= this.offset;
 					this.offset = 0;
@@ -139,24 +142,25 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 
 	/**
 	 * Serializes the object.
+	 * All {@code null} elements in {@link #data} will be replaced with a {@code new} value.
 	 * @param out the data destination.
 	 * @param buf the initial buffer or {@code null}.
 	 * @return the final buffer. When the serial fits into {@code buf} then the return is {@code buf}.
 	 *  Otherwise the return is a new buffer, large enough to hold the whole serial.
 	 * @throws IOException from {@code out}.
-	 * @throws IllegalStateException on an upper limit breach defined by {@link #colferSizeMax}.
+	 * @throws IllegalStateException on an upper limit breach defined by either {@link #colferSizeMax} or {@link #colferListMax}.
 	 */
 	public byte[] marshal(OutputStream out, byte[] buf) throws IOException {
 		// TODO: better size estimation
 		if (buf == null || buf.length == 0)
-			buf = new byte[Math.min(BusinessKey.colferSizeMax, 2048)];
+			buf = new byte[Math.min(HistoricalArray.colferSizeMax, 2048)];
 
 		while (true) {
 			int i;
 			try {
 				i = marshal(buf, 0);
 			} catch (BufferOverflowException e) {
-				buf = new byte[Math.min(BusinessKey.colferSizeMax, buf.length * 4)];
+				buf = new byte[Math.min(HistoricalArray.colferSizeMax, buf.length * 4)];
 				continue;
 			}
 
@@ -167,11 +171,12 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 
 	/**
 	 * Serializes the object.
+	 * All {@code null} elements in {@link #data} will be replaced with a {@code new} value.
 	 * @param buf the data destination.
 	 * @param offset the initial index for {@code buf}, inclusive.
 	 * @return the final index for {@code buf}, exclusive.
 	 * @throws BufferOverflowException when {@code buf} is too small.
-	 * @throws IllegalStateException on an upper limit breach defined by {@link #colferSizeMax}.
+	 * @throws IllegalStateException on an upper limit breach defined by either {@link #colferSizeMax} or {@link #colferListMax}.
 	 */
 	public int marshal(byte[] buf, int offset) {
 		int i = offset;
@@ -179,28 +184,32 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 		try {
 			if (this.data.length != 0) {
 				buf[i++] = (byte) 0;
+				Historical[] a = this.data;
 
-				int size = this.data.length;
-				if (size > BusinessKey.colferSizeMax)
-					throw new IllegalStateException(format("colfer: com/atomosphere/kvs/model.BusinessKey.data size %d exceeds %d bytes", size, BusinessKey.colferSizeMax));
-
-				int x = size;
+				int x = a.length;
+				if (x > HistoricalArray.colferListMax)
+					throw new IllegalStateException(format("colfer: com/atomosphere/kvs/model.HistoricalArray.data length %d exceeds %d elements", x, HistoricalArray.colferListMax));
 				while (x > 0x7f) {
 					buf[i++] = (byte) (x | 0x80);
 					x >>>= 7;
 				}
 				buf[i++] = (byte) x;
 
-				int start = i;
-				i += size;
-				System.arraycopy(this.data, 0, buf, start, size);
+				for (int ai = 0; ai < a.length; ai++) {
+					Historical o = a[ai];
+					if (o == null) {
+						o = new Historical();
+						a[ai] = o;
+					}
+					i = o.marshal(buf, i);
+				}
 			}
 
 			buf[i++] = (byte) 0x7f;
 			return i;
 		} catch (ArrayIndexOutOfBoundsException e) {
-			if (i - offset > BusinessKey.colferSizeMax)
-				throw new IllegalStateException(format("colfer: com/atomosphere/kvs/model.BusinessKey exceeds %d bytes", BusinessKey.colferSizeMax));
+			if (i - offset > HistoricalArray.colferSizeMax)
+				throw new IllegalStateException(format("colfer: com/atomosphere/kvs/model.HistoricalArray exceeds %d bytes", HistoricalArray.colferSizeMax));
 			if (i > buf.length) throw new BufferOverflowException();
 			throw e;
 		}
@@ -212,7 +221,7 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 	 * @param offset the initial index for {@code buf}, inclusive.
 	 * @return the final index for {@code buf}, exclusive.
 	 * @throws BufferUnderflowException when {@code buf} is incomplete. (EOF)
-	 * @throws SecurityException on an upper limit breach defined by {@link #colferSizeMax}.
+	 * @throws SecurityException on an upper limit breach defined by either {@link #colferSizeMax} or {@link #colferListMax}.
 	 * @throws InputMismatchException when the data does not match this object's schema.
 	 */
 	public int unmarshal(byte[] buf, int offset) {
@@ -226,7 +235,7 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 	 * @param end the index limit for {@code buf}, exclusive.
 	 * @return the final index for {@code buf}, exclusive.
 	 * @throws BufferUnderflowException when {@code buf} is incomplete. (EOF)
-	 * @throws SecurityException on an upper limit breach defined by {@link #colferSizeMax}.
+	 * @throws SecurityException on an upper limit breach defined by either {@link #colferSizeMax} or {@link #colferListMax}.
 	 * @throws InputMismatchException when the data does not match this object's schema.
 	 */
 	public int unmarshal(byte[] buf, int offset, int end) {
@@ -237,29 +246,31 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 			byte header = buf[i++];
 
 			if (header == (byte) 0) {
-				int size = 0;
+				int length = 0;
 				for (int shift = 0; true; shift += 7) {
 					byte b = buf[i++];
-					size |= (b & 0x7f) << shift;
+					length |= (b & 0x7f) << shift;
 					if (shift == 28 || b >= 0) break;
 				}
-				if (size < 0 || size > BusinessKey.colferSizeMax)
-					throw new SecurityException(format("colfer: com/atomosphere/kvs/model.BusinessKey.data size %d exceeds %d bytes", size, BusinessKey.colferSizeMax));
+				if (length < 0 || length > HistoricalArray.colferListMax)
+					throw new SecurityException(format("colfer: com/atomosphere/kvs/model.HistoricalArray.data length %d exceeds %d elements", length, HistoricalArray.colferListMax));
 
-				this.data = new byte[size];
-				int start = i;
-				i += size;
-				System.arraycopy(buf, start, this.data, 0, size);
-
+				Historical[] a = new Historical[length];
+				for (int ai = 0; ai < length; ai++) {
+					Historical o = new Historical();
+					i = o.unmarshal(buf, i, end);
+					a[ai] = o;
+				}
+				this.data = a;
 				header = buf[i++];
 			}
 
 			if (header != (byte) 0x7f)
 				throw new InputMismatchException(format("colfer: unknown header at byte %d", i - 1));
 		} finally {
-			if (i > end && end - offset < BusinessKey.colferSizeMax) throw new BufferUnderflowException();
-			if (i < 0 || i - offset > BusinessKey.colferSizeMax)
-				throw new SecurityException(format("colfer: com/atomosphere/kvs/model.BusinessKey exceeds %d bytes", BusinessKey.colferSizeMax));
+			if (i > end && end - offset < HistoricalArray.colferSizeMax) throw new BufferUnderflowException();
+			if (i < 0 || i - offset > HistoricalArray.colferSizeMax)
+				throw new SecurityException(format("colfer: com/atomosphere/kvs/model.HistoricalArray exceeds %d bytes", HistoricalArray.colferSizeMax));
 			if (i > end) throw new BufferUnderflowException();
 		}
 
@@ -301,27 +312,27 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 	}
 
 	/**
-	 * Gets com/atomosphere/kvs/model.BusinessKey.data.
+	 * Gets com/atomosphere/kvs/model.HistoricalArray.data.
 	 * @return the value.
 	 */
-	public byte[] getData() {
+	public Historical[] getData() {
 		return this.data;
 	}
 
 	/**
-	 * Sets com/atomosphere/kvs/model.BusinessKey.data.
+	 * Sets com/atomosphere/kvs/model.HistoricalArray.data.
 	 * @param value the replacement.
 	 */
-	public void setData(byte[] value) {
+	public void setData(Historical[] value) {
 		this.data = value;
 	}
 
 	/**
-	 * Sets com/atomosphere/kvs/model.BusinessKey.data.
+	 * Sets com/atomosphere/kvs/model.HistoricalArray.data.
 	 * @param value the replacement.
 	 * @return {link this}.
 	 */
-	public BusinessKey withData(byte[] value) {
+	public HistoricalArray withData(Historical[] value) {
 		this.data = value;
 		return this;
 	}
@@ -329,19 +340,19 @@ public class BusinessKey extends com.atomosphere.kvs.ColferObject implements Ser
 	@Override
 	public final int hashCode() {
 		int h = 1;
-		for (byte b : this.data) h = 31 * h + b;
+		for (Historical o : this.data) h = 31 * h + (o == null ? 0 : o.hashCode());
 		return h;
 	}
 
 	@Override
 	public final boolean equals(Object o) {
-		return o instanceof BusinessKey && equals((BusinessKey) o);
+		return o instanceof HistoricalArray && equals((HistoricalArray) o);
 	}
 
-	public final boolean equals(BusinessKey o) {
+	public final boolean equals(HistoricalArray o) {
 		if (o == null) return false;
 		if (o == this) return true;
-		return o.getClass() == BusinessKey.class
+		return o.getClass() == HistoricalArray.class
 			&& java.util.Arrays.equals(this.data, o.data);
 	}
 

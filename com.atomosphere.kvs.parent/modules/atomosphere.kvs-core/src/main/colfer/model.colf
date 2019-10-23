@@ -1,0 +1,45 @@
+package model
+
+type PrimaryKey struct {
+	data					binary
+}
+
+type BusinessKey struct {
+	data					binary
+}
+
+type Record struct {
+	primaryKey				PrimaryKey
+	start					TimestampData
+	end						TimestampData
+	businessKey				BusinessKey
+	others					binary
+}
+
+type Historical struct {
+	primaryKey				PrimaryKey
+	start					TimestampData
+	end						TimestampData
+}
+
+type HistoricalArray struct {
+	data					[]Historical
+}
+
+type TimestampData struct {
+	data					uint64
+}
+
+type PutEvent struct {
+	primaryKey				PrimaryKey
+	start					TimestampData
+	end						TimestampData
+	businessKeyOld			BusinessKey
+	businessKeyNew			BusinessKey
+	others					binary
+}
+
+type removeEvent struct {
+	primaryKey				PrimaryKey
+	businessKey				BusinessKey
+}
